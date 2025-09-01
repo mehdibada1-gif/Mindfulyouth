@@ -1,0 +1,23 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users can read their own user document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Allow logged-in users to read all posts, but only create/update/delete their own
+    match /posts/{postId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // Allow logged-in users to manage their own mood entries
+    match /moodEntries/{entryId} {
+        allow read, write: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+  }
+}

@@ -1,11 +1,13 @@
+
+
 'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { BotMessageSquare, HeartPulse, Library, LogOut, Smile, User, Users } from 'lucide-react';
+import { BotMessageSquare, HeartPulse, Library, LogOut, Menu, Smile, User, Users } from 'lucide-react';
 import { useUser } from '@/hooks/use-user';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,18 +20,14 @@ import { Button } from '@/components/ui/button';
 import { BottomNavBar } from '@/components/layout/bottom-nav';
 
 import {
-  SidebarProvider,
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarFooter,
-  SidebarTrigger,
-  SidebarInset,
-} from '@/components/ui/sidebar';
-import { useIsMobile } from '@/hooks/use-mobile';
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import React from 'react';
+
 
 function Logo() {
   return (
@@ -41,22 +39,18 @@ function Logo() {
 }
 
 const navItems = [
-  { href: '/', label: 'Support Chat', icon: BotMessageSquare },
-  { href: '/mood-tracker', label: 'Mood Tracker', icon: Smile },
-  { href: '/forum', label: 'Peer Forum', icon: Users },
-  { href: '/knowledge-base', label: 'Knowledge Base', icon: Library },
-  { href: '/resources', label: 'Resources', icon: HeartPulse },
+    { href: '/chat', label: 'Support Chat', icon: BotMessageSquare },
+    { href: '/mood-tracker', label: 'Mood Tracker', icon: Smile },
+    { href: '/forum', label: 'Peer Forum', icon: Users },
+    { href: '/knowledge-base', label: 'Knowledge Base', icon: Library },
+    { href: '/resources', label: 'Resources', icon: HeartPulse },
 ];
 
 function UserNav() {
     const { user, signOut } = useUser();
   
     if (!user) {
-      return (
-        <Link href="/login">
-          <Button variant="outline">Sign In</Button>
-        </Link>
-      );
+      return null;
     }
   
     return (
@@ -64,14 +58,15 @@ function UserNav() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
-              <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
+              <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+              <AvatarFallback>{user.displayName?.[0].toUpperCase() || user.email?.[0].toUpperCase()}</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">My Account</p>
+              <p className="text-sm font-medium leading-none">{user.displayName || 'My Account'}</p>
               <p className="text-xs leading-none text-muted-foreground">
                 {user.email}
               </p>
@@ -96,61 +91,24 @@ function UserNav() {
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isMobile = useIsMobile();
+  const { user } = useUser();
+
+  const isPublicRoute = ['/', '/login', '/signup'].includes(pathname) || pathname.startsWith('/seed') || pathname.startsWith('/setup');
+  const showNav = user && !isPublicRoute;
 
   return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader>
-          <Logo />
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-            {navItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <Link href={item.href} className="w-full">
-                  <SidebarMenuButton
-                    isActive={pathname === item.href}
-                    tooltip={item.label}
-                  >
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter>
-          {/* Footer content if any, e.g. user profile */}
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background px-4 md:justify-end">
-          <SidebarTrigger className="md:hidden" />
-          <UserNav />
-        </header>
-        <main className="min-h-[calc(100vh-3.5rem-4rem)] p-4 sm:p-6 pb-24 md:pb-6">{children}</main>
-        <footer className="border-t bg-background p-4 hidden md:block">
-            <div className="container mx-auto">
-                <div className="grid md:grid-cols-2 gap-8 items-center">
-                    <div className="text-xs text-muted-foreground">
-                    Funded by the European Union. Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Education and Culture Executive Agency (EACEA). Neither the European Union nor EACEA can be held responsible for them.
-                    </div>
-                    <div className="flex justify-center md:justify-end">
-                        <Image 
-                            src="https://dare4.masterpeace.org/wp-content/uploads/sites/19/2024/03/EN-Co-Funded-by-the-EU_PANTONE-1536x322.png" 
-                            alt="Co-Funded by the European Union"
-                            width={300}
-                            height={63}
-                            data-ai-hint="logo european union"
-                        />
-                    </div>
+    <div className="flex flex-col h-full">
+        {showNav && (
+            <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background px-4 sm:px-6">
+                <div className="w-8" />
+                <div className="px-4">
+                    <Logo />
                 </div>
-            </div>
-        </footer>
-        {isMobile && <BottomNavBar />}
-      </SidebarInset>
-    </SidebarProvider>
+                <UserNav />
+            </header>
+        )}
+        <main className={`flex-1 overflow-y-auto ${showNav ? 'p-4 sm:p-6 pb-20' : ''}`}>{children}</main>
+        {showNav && <BottomNavBar />}
+    </div>
   );
 }

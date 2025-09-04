@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -6,7 +7,7 @@ import { BotMessageSquare, HeartPulse, Library, Smile, Users } from 'lucide-reac
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { href: '/', label: 'Chat', icon: BotMessageSquare },
+  { href: '/chat', label: 'Chat', icon: BotMessageSquare },
   { href: '/mood-tracker', label: 'Mood', icon: Smile },
   { href: '/forum', label: 'Forum', icon: Users },
   { href: '/knowledge-base', label: 'Learn', icon: Library },
@@ -17,8 +18,8 @@ export function BottomNavBar() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-20 border-t bg-background/95 backdrop-blur-sm md:hidden">
-      <div className="flex justify-around h-16">
+    <nav className="fixed bottom-0 left-0 right-0 z-20 border-t bg-background/95 backdrop-blur-sm">
+      <div className="flex justify-around h-16 max-w-sm mx-auto">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (

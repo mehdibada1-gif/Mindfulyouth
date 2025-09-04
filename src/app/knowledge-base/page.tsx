@@ -1,8 +1,11 @@
 
+'use client';
+
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 const articles = [
   {
@@ -39,13 +42,17 @@ const articles = [
 
 
 export default function KnowledgeBasePage() {
-  const articlesByCategory = articles.reduce((acc, article) => {
-    if (!acc[article.category]) {
-      acc[article.category] = [];
-    }
-    acc[article.category].push(article);
-    return acc;
-  }, {} as Record<string, typeof articles>);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const articlesByCategory = articles
+    .filter(article => article.title.toLowerCase().includes(searchTerm.toLowerCase()) || article.content.toLowerCase().includes(searchTerm.toLowerCase()))
+    .reduce((acc, article) => {
+      if (!acc[article.category]) {
+        acc[article.category] = [];
+      }
+      acc[article.category].push(article);
+      return acc;
+    }, {} as Record<string, typeof articles>);
 
   return (
     <div className="space-y-8">
@@ -59,31 +66,40 @@ export default function KnowledgeBasePage() {
        <div className="max-w-lg mx-auto">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input placeholder="Search articles..." className="pl-10" />
+            <Input 
+              placeholder="Search articles..." 
+              className="pl-10" 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
         </div>
 
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {Object.entries(articlesByCategory).map(([category, articles]) => (
-            <Card key={category}>
-                <CardHeader>
-                    <CardTitle>{category}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Accordion type="single" collapsible className="w-full">
-                        {articles.map(article => (
-                            <AccordionItem key={article.title} value={article.title}>
-                                <AccordionTrigger>{article.title}</AccordionTrigger>
-                                <AccordionContent>
-                                    {article.content}
-                                </AccordionContent>
-                            </AccordionItem>
-                        ))}
-                    </Accordion>
-                </CardContent>
-            </Card>
-        ))}
-      </div>
+        <Card>
+            <CardContent className="p-0">
+                 <Accordion type="multiple" className="w-full">
+                    {Object.entries(articlesByCategory).map(([category, articles]) => (
+                        <AccordionItem key={category} value={category}>
+                             <AccordionTrigger className="px-6 py-4 text-lg font-semibold">
+                                {category}
+                            </AccordionTrigger>
+                            <AccordionContent className="px-6 pb-4">
+                                 <Accordion type="single" collapsible className="w-full">
+                                    {articles.map(article => (
+                                        <AccordionItem key={article.title} value={article.title}>
+                                            <AccordionTrigger>{article.title}</AccordionTrigger>
+                                            <AccordionContent className="prose prose-sm max-w-none text-muted-foreground">
+                                                {article.content}
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    ))}
+                                </Accordion>
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
+            </CardContent>
+        </Card>
     </div>
   );
 }

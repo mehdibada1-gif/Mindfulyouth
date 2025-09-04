@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -49,8 +50,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-8rem)]">
-        <Card className="w-full max-w-md">
+    <div className="flex items-center justify-center md:min-h-[calc(100vh-8rem)]">
+        <Card className="w-full max-w-md md:shadow-sm">
             <CardHeader>
                 <CardTitle>Welcome Back!</CardTitle>
                 <CardDescription>Sign in to your MindfulYouth account.</CardDescription>

@@ -1,7 +1,8 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Globe, MessageCircle, Phone, Video } from "lucide-react";
 
-const resources = [
+const immediateHelpResources = [
   {
     title: "Crisis Text Line",
     description: "Connect with a crisis counselor for free, 24/7 support. Text HOME to 741741.",
@@ -23,7 +24,10 @@ const resources = [
     type: "Call",
     link: "https://988lifeline.org/",
   },
-  {
+];
+
+const toolsAndInfoResources = [
+   {
     title: "NAMI (National Alliance on Mental Illness)",
     description: "Find resources, support groups, and educational materials.",
     icon: Globe,
@@ -55,28 +59,60 @@ export default function ResourcesPage() {
           If you are in immediate danger, please call 911. Here are some resources that can provide help and support.
         </p>
       </div>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {resources.map((resource) => {
-          const Icon = resource.icon;
-          return (
-            <a key={resource.title} href={resource.link} target="_blank" rel="noopener noreferrer" className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
-                <Card className="h-full hover:border-primary transition-colors hover:shadow-lg flex flex-col">
-                <CardHeader className="flex flex-row items-center gap-4">
-                    <div className="bg-primary/10 p-3 rounded-lg">
-                        <Icon className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                        <CardTitle>{resource.title}</CardTitle>
-                        <p className="text-sm text-muted-foreground">{resource.type}</p>
-                    </div>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                    <CardDescription>{resource.description}</CardDescription>
-                </CardContent>
-                </Card>
-            </a>
-          );
-        })}
+
+      <div className="space-y-6">
+        <div>
+            <h2 className="text-2xl font-semibold tracking-tight mb-4">Immediate Help</h2>
+            <div className="space-y-4">
+                {immediateHelpResources.map((resource) => {
+                const Icon = resource.icon;
+                return (
+                    <a key={resource.title} href={resource.link} target="_blank" rel="noopener noreferrer" className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
+                        <Card className="h-full hover:border-primary transition-colors hover:shadow-lg flex flex-col">
+                        <CardHeader className="flex flex-row items-center gap-4">
+                            <div className="bg-primary/10 p-3 rounded-lg">
+                                <Icon className="h-6 w-6 text-primary" />
+                            </div>
+                            <div>
+                                <CardTitle>{resource.title}</CardTitle>
+                                <p className="text-sm text-muted-foreground">{resource.type}</p>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="flex-grow">
+                            <CardDescription>{resource.description}</CardDescription>
+                        </CardContent>
+                        </Card>
+                    </a>
+                );
+                })}
+            </div>
+        </div>
+         <div className="pt-6">
+            <h2 className="text-2xl font-semibold tracking-tight mb-4">Tools & Information</h2>
+            <div className="space-y-4">
+                {toolsAndInfoResources.map((resource) => {
+                const Icon = resource.icon;
+                return (
+                    <a key={resource.title} href={resource.link} target="_blank" rel="noopener noreferrer" className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg block h-full">
+                        <Card className="h-full hover:border-primary transition-colors hover:shadow-lg flex flex-col">
+                        <CardHeader className="flex flex-row items-center gap-4">
+                            <div className="bg-primary/10 p-3 rounded-lg">
+                                <Icon className="h-6 w-6 text-primary" />
+                            </div>
+                            <div>
+                                <CardTitle>{resource.title}</CardTitle>
+                                <p className="text-sm text-muted-foreground">{resource.type}</p>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="flex-grow">
+                            <CardDescription>{resource.description}</CardDescription>
+                        </CardContent>
+                        </Card>
+                    </a>
+                );
+                })}
+            </div>
+        </div>
       </div>
     </div>
   );

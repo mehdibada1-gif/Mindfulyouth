@@ -24,9 +24,11 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-body antialiased">
+      <body className="font-body antialiased" suppressHydrationWarning>
         <UserProvider>
-            <AppSidebar>{children}</AppSidebar>
+          <div className="flex flex-col h-screen max-w-sm mx-auto border-4 border-black rounded-3xl shadow-2xl overflow-hidden my-4">
+              <AppSidebar>{children}</AppSidebar>
+          </div>
         </UserProvider>
         <Toaster />
       </body>

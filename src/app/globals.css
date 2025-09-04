@@ -82,3 +82,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .mobile-frame {
+    @apply max-w-sm mx-auto border-4 border-black rounded-3xl shadow-2xl overflow-hidden my-4;
+  }
+}

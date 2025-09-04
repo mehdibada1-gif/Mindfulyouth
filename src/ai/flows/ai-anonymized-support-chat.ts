@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI-powered support chat flow that provides immediate emotional support,
@@ -31,43 +32,20 @@ export async function aiAnonymizedSupportChat(input: AiAnonymizedSupportChatInpu
   return aiAnonymizedSupportChatFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'aiAnonymizedSupportChatPrompt',
-  input: {
-    schema: AiAnonymizedSupportChatInputSchema,
-  },
-  output: {
-    schema: AiAnonymizedSupportChatOutputSchema,
-  },
-  prompt: `You are an AI-powered support chat assistant designed to provide immediate emotional support to young people. You understand natural language, remember past interactions, and adapt your responses to the user\'s emotional state. You maintain the user's anonymity and create a safe, judgment-free space.
+const systemPrompt = `You are an AI-powered support chat assistant designed to provide immediate emotional support to young people. You understand natural language, remember past interactions, and adapt your responses to the user's emotional state. You maintain the user's anonymity and create a safe, judgment-free space.
 
-  Here are some guidelines:
-  - Always be supportive and encouraging.
-  - Acknowledge the user's feelings.
-  - Offer helpful guidance and resources.
-  - If the user is in crisis, provide crisis hotline information.
-  - Maintain a non-clinical, humanized approach.
+Here are some guidelines:
+- Always be supportive and encouraging.
+- Acknowledge the user's feelings.
+- Offer helpful guidance and resources.
+- If the user is in crisis, provide crisis hotline information.
+- Maintain a non-clinical, humanized approach.
 
-  Here's the user's message: {{{message}}}
+{{#if emotionalState}}
+The user's emotional state is: {{{emotionalState}}}
+{{/if}}
+`;
 
-  {% if chatHistory %}
-  Here's the chat history:
-  {{#each chatHistory}}
-  {{#if (eq role \"user\")}}
-  User: {{{content}}}
-  {{else}}
-  Assistant: {{{content}}}
-  {{/if}}
-  {{/each}}
-  {% endif %}
-
-  {% if emotionalState %}
-  The user's emotional state is: {{{emotionalState}}}
-  {% endif %}
-
-  Respond to the user:
-  `,
-});
 
 const aiAnonymizedSupportChatFlow = ai.defineFlow(
   {
@@ -76,7 +54,30 @@ const aiAnonymizedSupportChatFlow = ai.defineFlow(
     outputSchema: AiAnonymizedSupportChatOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    const { message, chatHistory } = input;
+
+    const history = (chatHistory || []).map(msg => ({
+        role: msg.role,
+        content: [{ text: msg.content }]
+    }));
+    
+    // Add the current user message to the history for the AI
+    history.push({
+        role: 'user',
+        content: [{ text: message }]
+    });
+
+    const llmResponse = await ai.generate({
+      model: ai.model,
+      prompt: {
+        text: systemPrompt,
+        context: history.slice(0, -1), // Pass all but the last message as context
+      },
+      input: {
+        emotionalState: input.emotionalState
+      },
+    });
+
+    return { response: llmResponse.text };
   }
 );

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { aiAnonymizedSupportChat, type AiAnonymizedSupportChatInput } from '@/ai/flows/ai-anonymized-support-chat';
@@ -6,8 +7,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { Bot, Loader2, Send, User } from 'lucide-react';
+import { Bot, Loader2, Send, Trash2, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 type Message = {
   role: 'user' | 'assistant';
@@ -35,6 +47,10 @@ export function ChatInterface() {
         }
     }
   }, [messages]);
+
+  const handleClearChat = () => {
+    setMessages(initialMessages);
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +91,29 @@ export function ChatInterface() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] bg-card rounded-lg shadow-sm border">
+        <div className="flex items-center justify-between p-3 border-b">
+            <h2 className="text-lg font-semibold">Support Chat</h2>
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                     <Button variant="ghost" size="icon" disabled={messages.length <= 1}>
+                        <Trash2 className="h-5 w-5 text-muted-foreground"/>
+                        <span className="sr-only">Clear Chat</span>
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This will permanently delete your current chat history. This action cannot be undone.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleClearChat}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </div>
       <ScrollArea className="flex-1" ref={scrollAreaRef}>
         <div className="space-y-6 p-4">
           {messages.map((message, index) => (

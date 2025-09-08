@@ -19,7 +19,7 @@ const AiAnonymizedSupportChatInputSchema = z.object({
   chatHistory: z
     .array(
       z.object({
-        role: z.enum(['user', 'model', 'system', 'tool']),
+        role: z.enum(['user', 'model']), // System and tool roles are not sent from the client
         content: z.array(z.object({text: z.string()})),
       })
     )
@@ -55,10 +55,6 @@ Here are some guidelines:
 - Offer helpful guidance and resources.
 - If the user is in crisis, provide crisis hotline information.
 - Maintain a non-clinical, humanized approach.
-
-{{#if emotionalState}}
-The user's emotional state is: {{{emotionalState}}}
-{{/if}}
 `;
 
 const aiAnonymizedSupportChatFlow = ai.defineFlow(
@@ -70,18 +66,20 @@ const aiAnonymizedSupportChatFlow = ai.defineFlow(
   async input => {
     const {message, chatHistory, emotionalState} = input;
     
-    // Add the new user message to the history
+    // Construct the full history including the new user message
     const history: Message[] = chatHistory || [];
     history.push({role: 'user', content: [{text: message}]});
 
+    // Dynamically build the system prompt
+    let finalSystemPrompt = systemPromptTemplate;
+    if (emotionalState) {
+        finalSystemPrompt += `\nThe user's emotional state is: ${emotionalState}`;
+    }
+
     const llmResponse = await ai.generate({
       model: 'googleai/gemini-2.5-flash',
-      system: systemPromptTemplate,
+      system: finalSystemPrompt,
       history: history,
-      config: {
-        // Pass emotionalState to the system prompt template if it exists
-        ...(emotionalState ? {template_input: {emotionalState}} : {}),
-      },
     });
 
     return {response: llmResponse.text};

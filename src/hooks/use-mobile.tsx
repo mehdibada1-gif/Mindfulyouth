@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 const MOBILE_BREAKPOINT = 768
@@ -9,8 +10,11 @@ export function useIsMobile() {
     const checkSize = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
+    
+    // Initial check on mount (client-side only)
+    checkSize(); 
+
     window.addEventListener("resize", checkSize)
-    checkSize(); // Initial check
     return () => window.removeEventListener("resize", checkSize)
   }, [])
 

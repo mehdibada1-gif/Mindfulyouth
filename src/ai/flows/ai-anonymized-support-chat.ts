@@ -11,7 +11,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {Message, Part} from 'genkit';
+import {Message} from 'genkit';
 import {z} from 'genkit';
 
 const AiAnonymizedSupportChatInputSchema = z.object({
@@ -19,8 +19,8 @@ const AiAnonymizedSupportChatInputSchema = z.object({
   chatHistory: z
     .array(
       z.object({
-        role: z.enum(['user', 'assistant', 'system', 'tool']),
-        content: z.string(),
+        role: z.enum(['user', 'model', 'system', 'tool']),
+        content: z.array(z.object({text: z.string()})),
       })
     )
     .optional()
@@ -69,18 +69,15 @@ const aiAnonymizedSupportChatFlow = ai.defineFlow(
   },
   async input => {
     const {message, chatHistory, emotionalState} = input;
-
-    // Convert the chat history from the client to the format Genkit expects.
-    const history: Message[] = (chatHistory || []).map(msg => ({
-      role: msg.role as 'user' | 'assistant',
-      content: [{text: msg.content}],
-    }));
+    
+    // Add the new user message to the history
+    const history: Message[] = chatHistory || [];
+    history.push({role: 'user', content: [{text: message}]});
 
     const llmResponse = await ai.generate({
       model: 'googleai/gemini-2.5-flash',
       system: systemPromptTemplate,
       history: history,
-      prompt: message,
       config: {
         // Pass emotionalState to the system prompt template if it exists
         ...(emotionalState ? {template_input: {emotionalState}} : {}),

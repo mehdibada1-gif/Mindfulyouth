@@ -84,8 +84,6 @@ export const useUser = () => {
      
      // Manually refresh the user to get the latest profile data
      await currentUser.reload();
-     // It's often better to trigger a state reload in the provider than a full window reload
-     window.location.reload();
   };
 
   const uploadProfilePicture = async (file: File): Promise<string> => {

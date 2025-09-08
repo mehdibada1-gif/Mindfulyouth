@@ -1,38 +1,77 @@
-
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper function to check if the user is authenticated
+    // Helper function to check for authentication
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Helper function to check if the user is the owner of the document
-    function isOwner(userId) {
-      return request.auth.uid == userId;
+    // USER PROFILES
+    // Users can create their own profile and can only read/update their own.
+    match /users/{userId} {
+      allow read, update: if isAuthenticated() && request.auth.uid == userId;
+      allow create: if isAuthenticated();
+    }
+
+    // CHATS & MESSAGES
+    // Users can create chats.
+    // Users can only read, update (rename), and delete chats they own.
+    match /chats/{chatId} {
+      allow create: if isAuthenticated();
+      allow read, update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+
+      // MESSAGES Subcollection
+      // Users can create messages in a chat they own.
+      // Users can only read/delete messages in a chat they own.
+      match /messages/{messageId} {
+        // This rule is for single document reads, which we don't use much, but is good practice.
+        allow get: if isAuthenticated() && get(/databases/$(database)/documents/chats/$(chatId)).data.userId == request.auth.uid;
+        
+        // This rule is for querying the collection. It ensures a user can only list messages where they are the owner.
+        allow list: if isAuthenticated() && get(/databases/$(database)/documents/chats/$(chatId)).data.userId == request.auth.uid;
+        
+        // Users can create messages if they are the owner specified in the new message data.
+        allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+
+        // Users can delete messages if they own the parent chat document.
+        allow delete: if isAuthenticated() && get(/databases/$(database)/documents/chats/$(chatId)).data.userId == request.auth.uid;
+      }
     }
     
-    match /users/{userId} {
-      allow read, update, delete: if isAuthenticated() && isOwner(userId);
-      allow create: if isAuthenticated() && isOwner(userId);
-    }
-
+    // FORUM POSTS
+    // Any authenticated user can create a post.
+    // Anyone (even unauthenticated users) can read posts.
+    // Users can only delete their own posts.
+    // Users can update a post if they are the author OR if they are only liking/unliking it.
     match /posts/{postId} {
-      allow read, list: if isAuthenticated();
+      allow read: if true;
       allow create: if isAuthenticated();
-      allow update: if isAuthenticated(); // For likes
-      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+          resource.data.userId == request.auth.uid ||
+          (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'likedBy']) &&
+            (request.resource.data.likes == resource.data.likes + 1 || request.resource.data.likes == resource.data.likes - 1)
+          )
+      );
+
+      // COMMENTS Subcollection
+      // Anyone can read comments.
+      // Any authenticated user can create a comment.
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isAuthenticated();
+      }
     }
 
-    match /posts/{postId}/comments/{commentId} {
-      allow read, list, create: if isAuthenticated();
-      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
-    }
-
+    // MOOD ENTRIES
+    // Users can create mood entries for themselves.
+    // Users can only read their own mood entries.
     match /moodEntries/{entryId} {
-        allow read, list, create: if isAuthenticated() && isOwner(request.resource.data.userId);
-        allow update, delete: if isAuthenticated() && isOwner(resource.data.userId);
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
   }
 }

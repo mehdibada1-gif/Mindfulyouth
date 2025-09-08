@@ -30,6 +30,14 @@ const nextConfig: NextConfig = {
       }
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/favicon.ico',
+        destination: '/_next/static/favicon.ico',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

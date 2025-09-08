@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/hooks/use-user';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, Timestamp, limit } from 'firebase/firestore';
 import { formatDistanceToNow } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 
@@ -40,7 +40,8 @@ export default function MoodTrackerPage() {
     const q = query(
       collection(db, 'moodEntries'),
       where('userId', '==', user.uid),
-      orderBy('timestamp', 'desc')
+      orderBy('timestamp', 'desc'),
+      limit(30)
     );
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {

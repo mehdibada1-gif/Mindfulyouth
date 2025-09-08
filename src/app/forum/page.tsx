@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { MessageCircle, ThumbsUp, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, Timestamp, doc, writeBatch, deleteDoc, increment, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, Timestamp, doc, writeBatch, deleteDoc, increment, arrayUnion, arrayRemove, limit } from 'firebase/firestore';
 import { formatDistanceToNow } from 'date-fns';
 import { useUser } from '@/hooks/use-user';
 import Link from 'next/link';
@@ -34,7 +34,7 @@ export default function ForumPage() {
     const { user } = useUser();
 
     useEffect(() => {
-        const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
+        const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'), limit(30));
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const postsData: Post[] = [];
             querySnapshot.forEach((doc) => {

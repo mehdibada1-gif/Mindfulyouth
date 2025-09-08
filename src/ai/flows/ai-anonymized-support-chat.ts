@@ -11,28 +11,43 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {Message, Part} from 'genkit';
 import {z} from 'genkit';
 
 const AiAnonymizedSupportChatInputSchema = z.object({
   message: z.string().describe('The user message.'),
-  chatHistory: z.array(z.object({
-    role: z.enum(['user', 'assistant']),
-    content: z.string(),
-  })).optional().describe('The chat history.'),
-  emotionalState: z.string().optional().describe('The user\'s emotional state.'),
+  chatHistory: z
+    .array(
+      z.object({
+        role: z.enum(['user', 'assistant', 'system', 'tool']),
+        content: z.string(),
+      })
+    )
+    .optional()
+    .describe('The chat history.'),
+  emotionalState: z
+    .string()
+    .optional()
+    .describe("The user's emotional state."),
 });
-export type AiAnonymizedSupportChatInput = z.infer<typeof AiAnonymizedSupportChatInputSchema>;
+export type AiAnonymizedSupportChatInput = z.infer<
+  typeof AiAnonymizedSupportChatInputSchema
+>;
 
 const AiAnonymizedSupportChatOutputSchema = z.object({
   response: z.string().describe('The AI response.'),
 });
-export type AiAnonymizedSupportChatOutput = z.infer<typeof AiAnonymizedSupportChatOutputSchema>;
+export type AiAnonymizedSupportChatOutput = z.infer<
+  typeof AiAnonymizedSupportChatOutputSchema
+>;
 
-export async function aiAnonymizedSupportChat(input: AiAnonymizedSupportChatInput): Promise<AiAnonymizedSupportChatOutput> {
+export async function aiAnonymizedSupportChat(
+  input: AiAnonymizedSupportChatInput
+): Promise<AiAnonymizedSupportChatOutput> {
   return aiAnonymizedSupportChatFlow(input);
 }
 
-const systemPrompt = `You are an AI-powered support chat assistant designed to provide immediate emotional support to young people. You understand natural language, remember past interactions, and adapt your responses to the user's emotional state. You maintain the user's anonymity and create a safe, judgment-free space.
+const systemPromptTemplate = `You are an AI-powered support chat assistant designed to provide immediate emotional support to young people. You understand natural language, remember past interactions, and adapt your responses to the user's emotional state. You maintain the user's anonymity and create a safe, judgment-free space.
 
 Here are some guidelines:
 - Always be supportive and encouraging.
@@ -46,7 +61,6 @@ The user's emotional state is: {{{emotionalState}}}
 {{/if}}
 `;
 
-
 const aiAnonymizedSupportChatFlow = ai.defineFlow(
   {
     name: 'aiAnonymizedSupportChatFlow',
@@ -54,30 +68,25 @@ const aiAnonymizedSupportChatFlow = ai.defineFlow(
     outputSchema: AiAnonymizedSupportChatOutputSchema,
   },
   async input => {
-    const { message, chatHistory } = input;
+    const {message, chatHistory, emotionalState} = input;
 
-    const history = (chatHistory || []).map(msg => ({
-        role: msg.role,
-        content: [{ text: msg.content }]
+    // Convert the chat history from the client to the format Genkit expects.
+    const history: Message[] = (chatHistory || []).map(msg => ({
+      role: msg.role as 'user' | 'assistant',
+      content: [{text: msg.content}],
     }));
-    
-    // Add the current user message to the history for the AI
-    history.push({
-        role: 'user',
-        content: [{ text: message }]
-    });
 
     const llmResponse = await ai.generate({
-      model: ai.model,
-      prompt: {
-        text: systemPrompt,
-        context: history.slice(0, -1), // Pass all but the last message as context
-      },
-      input: {
-        emotionalState: input.emotionalState
+      model: 'googleai/gemini-2.5-flash',
+      system: systemPromptTemplate,
+      history: history,
+      prompt: message,
+      config: {
+        // Pass emotionalState to the system prompt template if it exists
+        ...(emotionalState ? {template_input: {emotionalState}} : {}),
       },
     });
 
-    return { response: llmResponse.text };
+    return {response: llmResponse.text};
   }
 );

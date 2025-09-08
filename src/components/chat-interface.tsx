@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 type Message = {
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'model';
   content: string;
 };
 
@@ -63,14 +63,16 @@ export function ChatInterface() {
     setIsLoading(true);
 
     try {
-      const chatHistory = messages.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
+      // The AI flow now expects the entire history, including the latest message.
+      // We also need to map the content to the `{text: string}` format.
+      const chatHistoryForApi = newMessages.slice(0, -1).map(msg => ({
+        role: msg.role === 'assistant' ? 'model' as const : 'user' as const,
+        content: [{ text: msg.content }],
       }));
 
       const input: AiAnonymizedSupportChatInput = {
         message: userMessage.content,
-        chatHistory: chatHistory,
+        chatHistory: chatHistoryForApi,
       };
 
       const result = await aiAnonymizedSupportChat(input);

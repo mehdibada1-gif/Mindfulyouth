@@ -52,7 +52,7 @@ export default function SeedPage() {
             const postsCollection = collection(db, 'posts');
             samplePosts.forEach(post => {
                 const docRef = doc(postsCollection);
-                batch.set(docRef, { ...post, timestamp: serverTimestamp() });
+                batch.set(docRef, { ...post, timestamp: serverTimestamp(), likedBy: [] });
             });
 
             // Seed mood entries

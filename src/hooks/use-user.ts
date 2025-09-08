@@ -2,14 +2,15 @@
 'use client';
 
 import { useContext } from 'react';
-import { UserContext, UserContextType } from '@/components/auth/user-provider';
+import { UserContext } from '@/components/auth/user-provider';
 import { 
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword, 
     signOut as firebaseSignOut,
     updateEmail,
     updatePassword,
-    updateProfile
+    updateProfile,
+    type UserCredential,
 } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -26,7 +27,7 @@ export const useUser = () => {
 
   const { user, auth, loading } = context;
 
-  const signUp = async (email, password) => {
+  const signUp = async (email: string, password: string): Promise<UserCredential> => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     // Create user profile in firestore
     await setDoc(doc(db, "users", userCredential.user.uid), {
@@ -39,7 +40,7 @@ export const useUser = () => {
     return userCredential;
   };
 
-  const signIn = (email, password) => {
+  const signIn = (email: string, password: string): Promise<UserCredential> => {
     return signInWithEmailAndPassword(auth, email, password);
   };
 

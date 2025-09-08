@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { useUser } from '@/hooks/use-user';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, Timestamp } from 'firebase/firestore';
-import { format } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 
 const moods = [
@@ -80,7 +80,7 @@ export default function MoodTrackerPage() {
   
   const formatTimestamp = (timestamp: Timestamp) => {
     if (!timestamp) return 'Just now';
-    return format(timestamp.toDate(), "MMMM d, yyyy");
+    return formatDistanceToNow(timestamp.toDate(), { addSuffix: true });
   }
   
   const checkinStreak = pastEntries.length > 0 ? (

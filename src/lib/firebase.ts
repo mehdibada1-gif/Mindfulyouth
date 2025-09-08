@@ -3,12 +3,12 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  projectId: "mindfulyouth",
-  appId: "1:394846150982:web:348b4c12f77ef85df18547",
-  storageBucket: "mindfulyouth.firebasestorage.app",
-  apiKey: "AIzaSyDVMA4C1q1HGmzr9DtCVIbbMnFNJgnZAhI",
-  authDomain: "mindfulyouth.firebaseapp.com",
-  messagingSenderId: "394846150982"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
 // Initialize Firebase
